@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VULPIXISM – Missing Support</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#000;color:#fff;font-family:'Open Sans',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.container{max-width:600px;padding:40px;text-align:center;}
+.icon{font-size:72px;margin-bottom:24px;opacity:.7;}
+h1{font-size:28px;font-weight:800;letter-spacing:4px;text-transform:uppercase;margin-bottom:8px;}
+.sub{font-size:12px;color:#666;letter-spacing:2px;margin-bottom:32px;}
+.msg{background:#111;border:1px solid #222;border-radius:8px;padding:24px;margin-bottom:24px;font-size:14px;line-height:1.7;color:#ccc;}
+.msg strong{color:#fff;}
+.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn{padding:10px 24px;border-radius:6px;font-family:'Open Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:8px;}
+.btn-primary{background:#fff;color:#000;border:none;}
+.btn-primary:hover{background:#ddd;}
+.btn-secondary{background:transparent;color:#fff;border:1px solid #444;}
+.btn-secondary:hover{border-color:#fff;}
+.checks{text-align:left;margin-top:20px;}
+.check-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #1a1a1a;font-size:13px;color:#aaa;}
+.check-item .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot-red{background:#ff4444;}
+.dot-yellow{background:#ffaa00;}
+.dot-green{background:#44ff88;}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="icon">⚠️</div>
+  <h1>Missing Support</h1>
+  <div class="sub">VULPIXISM 5.32 · Compatibility Report</div>
+  <div class="msg" id="supportMsg">
+    <strong>Your browser or device is missing required features</strong><br><br>
+    VULPIXISM requires WebGL 2.0, Web Audio API, and modern JavaScript support to run correctly.
+    Please update your browser or enable hardware acceleration.
+  </div>
+  <div class="checks" id="checkList"></div>
+  <div class="actions" style="margin-top:24px;">
+    <button class="btn btn-primary" onclick="missingsupport()">🔄 Retry Detection</button>
+    <a href="studio.html" class="btn btn-secondary">↩ Back to Studio</a>
+    <a href="https://vulpixism.fandom.com/wiki/Vulpixismpedia_Wiki" target="_blank" class="btn btn-secondary">📖 Help Wiki</a>
+  </div>
+</div>
+<script>
+function missingsupport(){
+  const checks=[
+    {label:'WebGL 2.0',test:()=>{try{const c=document.createElement('canvas');return!!c.getContext('webgl2');}catch(e){return false;}},required:true},
+    {label:'WebGL 1.0',test:()=>{try{const c=document.createElement('canvas');return!!(c.getContext('webgl')||c.getContext('experimental-webgl'));}catch(e){return false;}},required:false},
+    {label:'Web Audio API',test:()=>!!(window.AudioContext||window.webkitAudioContext),required:true},
+    {label:'Canvas 2D',test:()=>{try{const c=document.createElement('canvas');return!!c.getContext('2d');}catch(e){return false;}},required:true},
+    {label:'requestAnimationFrame',test:()=>!!window.requestAnimationFrame,required:true},
+    {label:'ES6 Modules',test:()=>{try{new Function('import("")');return true;}catch(e){return typeof Promise!=='undefined';}},required:false},
+    {label:'Video Element',test:()=>!!document.createElement('video').canPlayType,required:true},
+    {label:'File API',test:()=>!!(window.File&&window.FileReader&&window.FileList&&window.Blob),required:true},
+    {label:'localStorage',test:()=>{try{localStorage.setItem('v','1');localStorage.removeItem('v');return true;}catch(e){return false;}},required:false},
+    {label:'OffscreenCanvas',test:()=>typeof OffscreenCanvas!=='undefined',required:false},
+  ];
+  const list=document.getElementById('checkList');
+  list.innerHTML='';
+  let allGood=true;
+  checks.forEach(c=>{
+    const pass=c.test();
+    if(!pass&&c.required)allGood=false;
+    const el=document.createElement('div');
+    el.className='check-item';
+    const dot=document.createElement('div');
+    dot.className='dot '+(pass?'dot-green':c.required?'dot-red':'dot-yellow');
+    el.appendChild(dot);
+    const txt=document.createElement('span');
+    txt.textContent=c.label+' — '+(pass?'Supported':c.required?'MISSING (Required)':'Not available (Optional)');
+    el.appendChild(txt);
+    list.appendChild(el);
+  });
+  const msg=document.getElementById('supportMsg');
+  if(allGood){
+    msg.innerHTML='<strong style="color:#44ff88">✓ All required features detected.</strong><br><br>Your browser supports VULPIXISM 5.32. You may return to the studio.';
+  } else {
+    msg.innerHTML='<strong>Some required features are missing.</strong><br><br>Enable hardware acceleration in your browser settings, or try Chrome/Firefox with GPU support enabled.';
+  }
+}
+missingsupport();
+</script>
+</body>
+</html>

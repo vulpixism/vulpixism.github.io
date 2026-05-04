@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>VULPIXISM 5.32 Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+:root{
+  --bg:#000;--bg1:#0a0a0a;--bg2:#111;--bg3:#1a1a1a;--bg4:#222;
+  --border:#2a2a2a;--border2:#333;
+  --text:#fff;--text2:#aaa;--text3:#666;
+  --accent:#fff;--accent2:#e0e0e0;
+  --blue:#4488ff;--red:#ff4444;--green:#44ff88;--orange:#ffaa44;
+  --timeline-h:160px;--topbar-h:36px;--menubar-h:28px;
+  --panel-w:280px;--inspector-w:260px;
+}
+*{margin:0;padding:0;box-sizing:border-box;user-select:none;}
+body{background:var(--bg);color:var(--text);font-family:'Open Sans',sans-serif;font-size:13px;overflow:hidden;height:100vh;display:flex;flex-direction:column;}
+
+/* ── MENUBAR ── */
+#menubar{height:var(--menubar-h);background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 8px;gap:2px;flex-shrink:0;position:relative;z-index:100;}
+.menu-btn{padding:3px 10px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text2);transition:all .15s;position:relative;}
+.menu-btn:hover,.menu-btn.active{background:var(--bg3);color:var(--text);}
+.menu-logo{font-size:11px;font-weight:800;letter-spacing:3px;color:var(--text3);margin-right:8px;cursor:pointer;}
+.menu-logo:hover{color:var(--text);}
+.menu-sep{width:1px;height:16px;background:var(--border);margin:0 4px;}
+
+.dropdown{position:absolute;top:100%;left:0;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;min-width:200px;z-index:9999;padding:4px;display:none;box-shadow:0 8px 24px rgba(0,0,0,.8);}
+.dropdown.show{display:block;}
+.dd-item{padding:7px 12px;border-radius:4px;cursor:pointer;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:10px;transition:all .1s;}
+.dd-item:hover{background:var(--bg3);color:var(--text);}
+.dd-item .shortcut{margin-left:auto;color:var(--text3);font-size:11px;}
+.dd-sep{height:1px;background:var(--border);margin:4px 0;}
+.dd-label{padding:5px 12px;font-size:10px;color:var(--text3);font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+
+/* ── TOPBAR ── */
+#topbar{height:var(--topbar-h);background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 8px;gap:6px;flex-shrink:0;}
+.tb-group{display:flex;align-items:center;gap:2px;}
+.tb-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px;cursor:pointer;font-size:14px;color:var(--text2);transition:all .15s;position:relative;}
+.tb-btn:hover{background:var(--bg3);color:var(--text);}
+.tb-btn.active{background:var(--bg4);color:var(--text);}
+.tb-btn[title]:hover::after{content:attr(title);position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);background:var(--bg3);color:var(--text);padding:3px 8px;border-radius:4px;font-size:11px;white-space:nowrap;z-index:999;pointer-events:none;}
+.tb-sep{width:1px;height:20px;background:var(--border);margin:0 4px;}
+.mode-tabs{display:flex;background:var(--bg2);border-radius:6px;padding:2px;margin:0 8px;}
+.mode-tab{padding:4px 12px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600;color:var(--text3);transition:all .15s;}
+.mode-tab.active{background:var(--bg4);color:var(--text);}
+.project-name{font-size:12px;color:var(--text2);margin-left:auto;padding:4px 10px;border-radius:4px;cursor:pointer;}
+.project-name:hover{background:var(--bg3);}
+
+/* ── MAIN AREA ── */
+#main{display:flex;flex:1;overflow:hidden;}
+
+/* ── LEFT PANEL ── */
+#left-panel{width:var(--panel-w);background:var(--bg1);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+.panel-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg2);}
+.ptab{flex:1;padding:8px 4px;text-align:center;font-size:11px;font-weight:600;color:var(--text3);cursor:pointer;transition:all .15s;border-bottom:2px solid transparent;}
+.ptab.active{color:var(--text);border-bottom-color:var(--text);}
+.panel-content{flex:1;overflow-y:auto;padding:8px;}
+
+/* scrollbar */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* media items */
+.media-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.media-item{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:all .15s;position:relative;}
+.media-item:hover{border-color:var(--border2);}
+.media-item.selected{border-color:var(--text);}
+.media-thumb{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:var(--bg3);}
+.media-thumb-placeholder{width:100%;aspect-ratio:16/9;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:20px;}
+.media-name{padding:4px 6px;font-size:10px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.media-dur{position:absolute;bottom:20px;right:4px;background:rgba(0,0,0,.8);padding:1px 4px;border-radius:3px;font-size:9px;color:var(--text2);}
+
+/* effects list */
+.effect-list{display:flex;flex-direction:column;gap:4px;}
+.effect-item{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:pointer;transition:all .15s;}
+.effect-item:hover{border-color:var(--border2);}
+.effect-header{padding:8px 10px;display:flex;align-items:center;gap:8px;font-size:12px;}
+.effect-icon{font-size:14px;}
+.effect-tag{font-size:9px;background:var(--bg4);padding:2px 6px;border-radius:10px;color:var(--text3);margin-left:auto;}
+
+/* ── CENTER ── */
+#center{flex:1;display:flex;flex-direction:column;min-width:0;}
+#preview-area{flex:1;background:#000;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+#glCanvas{max-width:100%;max-height:100%;display:block;}
+#preview-overlay{position:absolute;inset:0;pointer-events:none;}
+.preview-safe{position:absolute;inset:10%;border:1px dashed rgba(255,255,255,.08);pointer-events:none;}
+.preview-crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;pointer-events:none;}
+.preview-crosshair::before,.preview-crosshair::after{content:'';position:absolute;background:rgba(255,255,255,.2);}
+.preview-crosshair::before{width:1px;height:100%;left:50%;}
+.preview-crosshair::after{width:100%;height:1px;top:50%;}
+.preview-watermark{position:absolute;bottom:8px;right:8px;font-size:10px;color:rgba(255,255,255,.15);letter-spacing:2px;font-weight:700;}
+.no-clip-msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--text3);pointer-events:none;}
+.no-clip-msg .big{font-size:32px;}
+.no-clip-msg span{font-size:12px;}
+
+/* transport */
+#transport{height:48px;background:var(--bg1);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:4px;flex-shrink:0;}
+.trans-btn{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;color:var(--text2);}
+.trans-btn:hover{background:var(--bg3);color:var(--text);}
+.trans-btn.play{background:var(--bg3);color:var(--text);font-size:18px;}
+.trans-btn.play:hover{background:var(--bg4);}
+.timecode{font-size:13px;font-weight:700;letter-spacing:2px;color:var(--text2);min-width:100px;text-align:center;font-variant-numeric:tabular-nums;}
+.vol-row{display:flex;align-items:center;gap:6px;margin-left:8px;}
+.vol-row input{width:60px;accent-color:var(--text);}
+
+/* ── TIMELINE ── */
+#timeline{height:var(--timeline-h);background:var(--bg1);border-top:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;}
+.timeline-top{height:32px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 8px;flex-shrink:0;}
+.tl-label{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:1px;}
+.tl-zoom{display:flex;align-items:center;gap:4px;margin-left:auto;}
+.tl-zoom-btn{width:22px;height:22px;background:var(--bg3);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text2);}
+.tl-zoom-btn:hover{color:var(--text);}
+.timeline-body{flex:1;display:flex;overflow-x:auto;position:relative;}
+.track-labels{width:80px;flex-shrink:0;border-right:1px solid var(--border);}
+.track-label{height:32px;display:flex;align-items:center;padding:0 8px;font-size:10px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap;}
+.tracks-area{flex:1;position:relative;overflow:hidden;}
+#rulerCanvas{position:absolute;top:0;left:0;width:100%;height:20px;cursor:pointer;}
+.track-row{height:32px;border-bottom:1px solid var(--border);position:relative;}
+.clip-block{position:absolute;height:26px;top:3px;border-radius:4px;background:var(--bg3);border:1px solid var(--border2);cursor:pointer;overflow:hidden;display:flex;align-items:center;padding:0 6px;min-width:8px;transition:box-shadow .1s;}
+.clip-block:hover{box-shadow:0 0 0 1px var(--text3);}
+.clip-block.selected{box-shadow:0 0 0 1px var(--text);background:var(--bg4);}
+.clip-label{font-size:9px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.clip-thumb{width:24px;height:18px;object-fit:cover;border-radius:2px;margin-right:4px;flex-shrink:0;}
+.playhead{position:absolute;top:0;bottom:0;width:1px;background:var(--red);pointer-events:none;z-index:10;}
+.playhead::before{content:'';position:absolute;top:0;left:-4px;width:9px;height:9px;background:var(--red);clip-path:polygon(50% 100%,0 0,100% 0);}
+.kf-dot{position:absolute;width:8px;height:8px;background:var(--orange);border-radius:50%;top:50%;transform:translateY(-50%);cursor:pointer;z-index:5;}
+
+/* ── RIGHT INSPECTOR ── */
+#inspector{width:var(--inspector-w);background:var(--bg1);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
+.insp-section{border-bottom:1px solid var(--border);padding:10px;}
+.insp-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
+.insp-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.insp-label{font-size:11px;color:var(--text2);min-width:70px;flex-shrink:0;}
+.insp-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:4px 8px;color:var(--text);font-size:12px;font-family:'Open Sans',sans-serif;outline:none;transition:border .15s;}
+.insp-input:focus{border-color:var(--text3);}
+.insp-input[type=range]{padding:0;background:none;border:none;cursor:pointer;}
+.insp-btn{padding:6px 12px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'Open Sans',sans-serif;}
+.insp-btn-primary{background:var(--text);color:var(--bg);border:none;}
+.insp-btn-primary:hover{background:var(--text2);}
+.insp-btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);}
+.insp-btn-ghost:hover{border-color:var(--text3);color:var(--text);}
+.insp-btn-danger{background:transparent;color:var(--red);border:1px solid #442222;}
+.insp-btn-danger:hover{background:#331111;}
+
+/* active effects on clip */
+.active-effect-item{background:var(--bg2);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;overflow:hidden;}
+.ae-header{padding:7px 10px;display:flex;align-items:center;gap:6px;cursor:pointer;}
+.ae-name{font-size:12px;font-weight:600;flex:1;}
+.ae-toggle{font-size:13px;cursor:pointer;}
+.ae-remove{font-size:13px;cursor:pointer;color:var(--text3);}
+.ae-remove:hover{color:var(--red);}
+.ae-params{padding:8px 10px;border-top:1px solid var(--border);display:none;}
+.ae-params.open{display:block;}
+.ae-param-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.ae-param-label{font-size:10px;color:var(--text2);min-width:70px;}
+.ae-param-val{font-size:10px;color:var(--text3);min-width:32px;text-align:right;}
+.ae-param-input{flex:1;accent-color:var(--text);cursor:pointer;}
+
+/* keyframe list */
+.kf-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;}
+.kf-prop{color:var(--text2);flex:1;}
+.kf-time{color:var(--text3);min-width:40px;}
+.kf-del{cursor:pointer;color:var(--text3);}
+.kf-del:hover{color:var(--red);}
+
+/* panels (freelance / social) */
+.overlay-panel{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;display:flex;align-items:center;justify-content:center;display:none;}
+.overlay-panel.show{display:flex;}
+.panel-box{background:var(--bg1);border:1px solid var(--border2);border-radius:12px;padding:32px;max-width:540px;width:90%;position:relative;}
+.panel-close{position:absolute;top:12px;right:16px;cursor:pointer;font-size:20px;color:var(--text3);}
+.panel-close:hover{color:var(--text);}
+.panel-h1{font-size:20px;font-weight:800;margin-bottom:4px;}
+.panel-sub{font-size:12px;color:var(--text3);margin-bottom:24px;}
+.social-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.social-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;transition:all .2s;}
+.social-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.social-card img{width:100%;aspect-ratio:1;object-fit:cover;}
+.social-card-label{padding:8px 10px;font-size:11px;font-weight:600;color:var(--text2);}
+.freelance-grid{display:flex;flex-direction:column;gap:12px;}
+.fl-item{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.fl-item img{width:100%;height:120px;object-fit:cover;}
+.fl-item-body{padding:12px;}
+.fl-item-title{font-size:14px;font-weight:700;margin-bottom:4px;}
+.fl-item-desc{font-size:12px;color:var(--text2);line-height:1.5;}
+
+/* 2d3d tab content */
+.comp-img{width:100%;border-radius:6px;object-fit:cover;}
+.info-badge{display:inline-block;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:3px 8px;font-size:10px;color:var(--text2);margin:2px;}
+
+/* draw canvas */
+#drawCanvas{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair;display:none;z-index:10;}
+
+/* export overlay */
+#exportOverlay{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:2000;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+#exportOverlay.show{display:flex;}
+.exp-title{font-size:20px;font-weight:800;letter-spacing:2px;}
+.exp-bar{width:300px;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.exp-fill{height:100%;background:var(--text);border-radius:2px;transition:width .1s;}
+.exp-label{font-size:12px;color:var(--text2);}
+</style>
+</head>
+<body>
+
+<!-- MENUBAR -->
+<div id="menubar">
+  <div class="menu-logo" onclick="VULPIXISM.helpmenu('about')">VULPIXISM</div>
+  <div class="menu-sep"></div>
+
+  <div class="menu-btn" id="mb-file" onclick="toggleMenu('file')">File</div>
+  <div class="dropdown" id="dd-file">
+    <div class="dd-item" onclick="VULPIXISM.filemenu('new')"><span>🆕</span>New Project<span class="shortcut">Ctrl+N</span></div>
+    <div class="dd-item" onclick="VULPIXISM.filemenu('open')"><span>📂</span>Open Project<span class="shortcut">Ctrl+O</span></div>
+    <div class="dd-sep"></div>
+    <div class="dd-item" onclick="VULPIXISM.filemenu('upload')"><span>📥</span>Upload File<span class="shortcut">Ctrl+I</span></div>
+    <div class="dd-item" onclick="VULPIXISM.filemenu('shape')"><span>⬛</span>Add Shape</div>
+    <div class="dd-item" onclick="VULPIXISM.filemenu('draw')"><span>✏️</span>Draw</div>
+    <div class="dd-sep"></div>
+    <div class="dd-item" onclick="VULPIXISM.filemenu('save')"><span>💾</span>Save Project<span class="shortcut">Ctrl+S</span></div>
+    <div class="dd-item" onclick="VULPIXISM.filemenu('export')"><span>🎬</span>Export Media<span class="shortcut">Ctrl+E</span></div>
+  </div>
+
+  <div class="menu-btn" id="mb-edit" onclick="toggleMenu('edit')">Edit</div>
+  <div class="dropdown" id="dd-edit">
+    <div class="dd-item" onclick="VULPIXISM.editmenu('undo')"><span>↩</span>Undo<span class="shortcut">Ctrl+Z</span></div>
+    <div class="dd-item" onclick="VULPIXISM.editmenu('redo')"><span>↪</span>Redo<span class="shortcut">Ctrl+Y</span></div>
+    <div class="dd-sep"></div>
+    <div class="dd-item" onclick="VULPIXISM.editmenu('copy')"><span>📋</span>Copy<span class="shortcut">Ctrl+C</span></div>
+    <div class="dd-item" onclick="VULPIXISM.editmenu('paste')"><span>📌</span>Paste<span class="shortcut">Ctrl+V</span></div>
+    <div class="dd-item" onclick="VULPIXISM.editmenu('duplicate')"><span>⧉</span>Duplicate<span class="shortcut">Ctrl+D</span></div>
+  </div>
+
+  <div class="menu-btn" id="mb-prefs" onclick="toggleMenu('prefs')">Preferences</div>
+  <div class="dropdown" id="dd-prefs">
+    <div class="dd-item" onclick="VULPIXISM.preferencesmenu('clearcache')"><span>🗑</span>Clear Cache</div>
+    <div class="dd-item" onclick="VULPIXISM.preferencesmenu('fixunsupported')"><span>🛠</span>Fix Unsupported Media</div>
+    <div class="dd-item" onclick="VULPIXISM.preferencesmenu('fixwebgl')"><span>⚙️</span>Fix Missing WebGL Support</div>
+    <div class="dd-item" onclick="VULPIXISM.preferencesmenu('matchduration')"><span>📐</span>Match Duration to Aspect Ratio</div>
+  </div>
+
+  <div class="menu-btn" id="mb-help" onclick="toggleMenu('help')">Help</div>
+  <div class="dropdown" id="dd-help">
+    <div class="dd-item" onclick="VULPIXISM.helpmenu('wiki')"><span>📖</span>Support Wiki<span class="shortcut">↗</span></div>
+    <div class="dd-sep"></div>
+    <div class="dd-item" onclick="VULPIXISM.helpmenu('about')"><span>ℹ️</span>About VULPIXISM 5.32</div>
+    <div class="dd-item" onclick="window.location.href='missingsupport.html'"><span>⚠️</span>Missing Support Checker</div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="tb-group">
+    <div class="tb-btn" title="Undo" onclick="VULPIXISM.editmenu('undo')">↩</div>
+    <div class="tb-btn" title="Redo" onclick="VULPIXISM.editmenu('redo')">↪</div>
+  </div>
+  <div class="tb-sep"></div>
+  <div class="tb-group">
+    <div class="tb-btn" title="Upload File" onclick="VULPIXISM.filemenu('upload')">📥</div>
+    <div class="tb-btn" title="Add Shape" onclick="VULPIXISM.filemenu('shape')">⬛</div>
+    <div class="tb-btn" title="Draw" id="btn-draw" onclick="toggleDraw()">✏️</div>
+    <div class="tb-btn" title="Keyframe" onclick="addKfAtCurrent()">🔷</div>
+  </div>
+  <div class="tb-sep"></div>
+  <div class="mode-tabs">
+    <div class="mode-tab active" id="tab-classic" onclick="setMode('classic')">Classic Editor</div>
+    <div class="mode-tab" id="tab-comp" onclick="setMode('comp')">2D&amp;3D Compositing</div>
+  </div>
+  <div class="tb-sep"></div>
+  <div class="tb-btn" title="Freelance Web Developer" onclick="VULPIXISM.freelancewebdeveloper()">🌐</div>
+  <div class="tb-btn" title="Social Links" onclick="VULPIXISM.socialinks()">🔗</div>
+  <div class="tb-btn" title="Export" onclick="VULPIXISM.filemenu('export')">🎬</div>
+  <div class="project-name" id="projectName" onclick="renameProject()">Untitled Project</div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- LEFT PANEL -->
+  <div id="left-panel">
+    <div class="panel-tabs">
+      <div class="ptab active" id="ptab-media" onclick="switchPTab('media')">Media</div>
+      <div class="ptab" id="ptab-effects" onclick="switchPTab('effects')">Effects</div>
+      <div class="ptab" id="ptab-layers" onclick="switchPTab('layers')">Layers</div>
+    </div>
+    <div class="panel-content" id="panel-media">
+      <div style="margin-bottom:8px;display:flex;gap:6px;">
+        <button class="insp-btn insp-btn-primary" style="flex:1;padding:7px;" onclick="VULPIXISM.filemenu('upload')">+ Import</button>
+        <button class="insp-btn insp-btn-ghost" onclick="VULPIXISM.filemenu('shape')">Shape</button>
+      </div>
+      <div class="media-grid" id="mediaGrid"></div>
+    </div>
+    <div class="panel-content" id="panel-effects" style="display:none;">
+      <div style="margin-bottom:8px;">
+        <input class="insp-input" style="width:100%;" placeholder="Search effects…" oninput="filterEffects(this.value)" id="fx-search">
+      </div>
+      <div class="effect-list" id="effectList"></div>
+    </div>
+    <div class="panel-content" id="panel-layers" style="display:none;">
+      <div id="layerList"></div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div id="center">
+    <!-- CLASSIC EDITOR VIEW -->
+    <div id="view-classic" style="flex:1;display:flex;flex-direction:column;">
+      <div id="preview-area">
+        <canvas id="glCanvas" width="1280" height="720"></canvas>
+        <canvas id="drawCanvas"></canvas>
+        <div id="preview-overlay">
+          <div class="preview-safe"></div>
+          <div class="preview-crosshair"></div>
+          <div class="preview-watermark">VULPIXISM 5.32</div>
+        </div>
+        <div class="no-clip-msg" id="noClipMsg">
+          <div class="big">🎬</div>
+          <span>Import media or add a shape to start</span>
+          <button class="insp-btn insp-btn-ghost" style="pointer-events:all;" onclick="VULPIXISM.filemenu('upload')">Import Media</button>
+        </div>
+      </div>
+      <div id="transport">
+        <div class="trans-btn" title="Skip to start" onclick="seekTo(0)">⏮</div>
+        <div class="trans-btn" title="Step back" onclick="stepFrame(-1)">⏪</div>
+        <div class="trans-btn play" id="playBtn" onclick="togglePlay()">▶</div>
+        <div class="trans-btn" title="Step forward" onclick="stepFrame(1)">⏩</div>
+        <div class="trans-btn" title="Skip to end" onclick="seekTo(VULPIXISM.state.duration)">⏭</div>
+        <div class="timecode" id="timecode">00:00:00</div>
+        <div class="vol-row">
+          <span style="font-size:13px;">🔊</span>
+          <input type="range" min="0" max="1" step="0.01" value="1" oninput="setVolume(this.value)" style="width:60px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- 2D&3D COMP VIEW -->
+    <div id="view-comp" style="display:none;flex:1;overflow-y:auto;padding:16px;gap:16px;flex-direction:column;display:none;">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+          <img src="InShot_20260504_084410700.jpg" alt="2D&3D Compositing" class="comp-img" onerror="this.style.display='none'">
+          <div style="padding:12px;">
+            <div style="font-size:14px;font-weight:700;margin-bottom:4px;">2D Compositing</div>
+            <div style="font-size:11px;color:var(--text2);line-height:1.6;">Layer-based 2D compositing with blend modes, masks, and track mattes. Real-time WebGL rendering with full effect chain support.</div>
+            <div style="margin-top:8px;">
+              <span class="info-badge">Blend Modes</span><span class="info-badge">Alpha Matte</span><span class="info-badge">Track Matte</span><span class="info-badge">Pre-compose</span>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:200px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:14px;font-weight:700;margin-bottom:8px;">3D Compositing</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.6;">WebGL-powered 3D layer positioning with perspective camera, depth sorting, and 3D transformations. Lights and shadows support.</div>
+          <div style="margin-top:8px;">
+            <span class="info-badge">3D Layers</span><span class="info-badge">Camera</span><span class="info-badge">Lights</span><span class="info-badge">Shadows</span><span class="info-badge">Depth Sort</span>
+          </div>
+          <div id="comp3dCanvas" style="margin-top:12px;background:var(--bg3);border-radius:6px;height:120px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:12px;">WebGL 3D Viewport</div>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;">Compositing Controls</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">Blend Mode</div>
+            <select class="insp-input" id="blendMode" style="width:100%;" onchange="setBlendMode(this.value)">
+              <option>Normal</option><option>Multiply</option><option>Screen</option><option>Overlay</option>
+              <option>Darken</option><option>Lighten</option><option>Color Dodge</option><option>Color Burn</option>
+              <option>Hard Light</option><option>Soft Light</option><option>Difference</option><option>Exclusion</option>
+              <option>Hue</option><option>Saturation</option><option>Color</option><option>Luminosity</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">Opacity</div>
+            <input type="range" class="insp-input" min="0" max="100" value="100" oninput="setOpacity(this.value/100)">
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">Z-Depth</div>
+            <input type="number" class="insp-input" value="0" step="1" oninput="setZDepth(this.value)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIMELINE (below both views) -->
+    <div id="timeline">
+      <div class="timeline-top">
+        <span class="tl-label">TIMELINE</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:8px;" id="tlDuration"></span>
+        <div class="tl-zoom">
+          <div class="tl-zoom-btn" onclick="zoomTl(-1)">−</div>
+          <div style="font-size:10px;color:var(--text3);min-width:30px;text-align:center;" id="zoomLabel">1×</div>
+          <div class="tl-zoom-btn" onclick="zoomTl(1)">+</div>
+        </div>
+      </div>
+      <div class="timeline-body">
+        <div class="track-labels" id="trackLabels">
+          <div class="track-label" style="height:20px;">TIME</div>
+        </div>
+        <div class="tracks-area" id="tracksArea">
+          <canvas id="rulerCanvas" height="20"></canvas>
+          <div id="trackRows"></div>
+          <div class="playhead" id="playhead" style="left:0;top:20px;bottom:0;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSPECTOR -->
+  <div id="inspector">
+    <div class="insp-section">
+      <div class="insp-title">Transform</div>
+      <div class="insp-row"><span class="insp-label">X</span><input class="insp-input" id="inp-x" type="number" value="0" oninput="setClipProp('x',+this.value)"></div>
+      <div class="insp-row"><span class="insp-label">Y</span><input class="insp-input" id="inp-y" type="number" value="0" oninput="setClipProp('y',+this.value)"></div>
+      <div class="insp-row"><span class="insp-label">W</span><input class="insp-input" id="inp-w" type="number" value="1280" oninput="setClipProp('width',+this.value)"></div>
+      <div class="insp-row"><span class="insp-label">H</span><input class="insp-input" id="inp-h" type="number" value="720" oninput="setClipProp('height',+this.value)"></div>
+      <div class="insp-row"><span class="insp-label">Rotation</span><input class="insp-input" id="inp-rot" type="number" value="0" oninput="setClipProp('rotation',+this.value)"></div>
+      <div class="insp-row"><span class="insp-label">Opacity</span><input class="insp-input" id="inp-op" type="range" min="0" max="1" step="0.01" value="1" oninput="setClipProp('opacity',+this.value)"></div>
+    </div>
+    <div class="insp-section">
+      <div class="insp-title">Timing</div>
+      <div class="insp-row"><span class="insp-label">Start</span><input class="insp-input" id="inp-start" type="number" value="0" step="0.1" oninput="setClipProp('start',+this.value)"></div>
+      <div class="insp-row"><span class="insp-label">Duration</span><input class="insp-input" id="inp-dur" type="number" value="5" step="0.1" oninput="setClipProp('duration',+this.value)"></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+        <button class="insp-btn insp-btn-ghost" onclick="addKfAtCurrent()" style="font-size:10px;padding:5px 8px;">🔷 Add Keyframe</button>
+        <button class="insp-btn insp-btn-danger" onclick="deleteClip()" style="font-size:10px;padding:5px 8px;">🗑 Delete</button>
+      </div>
+    </div>
+    <div class="insp-section">
+      <div style="display:flex;align-items:center;margin-bottom:10px;">
+        <div class="insp-title" style="margin:0;flex:1;">Effects</div>
+        <button class="insp-btn insp-btn-ghost" style="font-size:10px;padding:4px 8px;" onclick="switchPTab('effects')">+ Add</button>
+      </div>
+      <div id="activeEffects"></div>
+    </div>
+    <div class="insp-section">
+      <div class="insp-title">Keyframes</div>
+      <div id="kfList"></div>
+      <div style="margin-top:6px;font-size:10px;color:var(--text3);">Bezier interpolation applied between keyframes.</div>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY PANELS -->
+<div class="overlay-panel" id="panel-freelance">
+  <div class="panel-box">
+    <div class="panel-close" onclick="closePanel('freelance')">✕</div>
+    <div class="panel-h1">Freelance Web Developer</div>
+    <div class="panel-sub">VULPIXISM Studio — Web &amp; Motion Design Services</div>
+    <div class="freelance-grid">
+      <div class="fl-item">
+        <img src="InShot_20260504_084410700.jpg" alt="2D&3D Work" onerror="this.style.background='var(--bg3)';this.style.height='120px'">
+        <div class="fl-item-body">
+          <div class="fl-item-title">2D &amp; 3D Motion Design</div>
+          <div class="fl-item-desc">Full compositing, animation, and motion graphics production. WebGL-accelerated effects pipeline.</div>
+        </div>
+      </div>
+      <div class="fl-item">
+        <img src="InShot_20260504_084358421.jpg" alt="Classic Video" onerror="this.style.background='var(--bg3)';this.style.height='120px'">
+        <div class="fl-item-body">
+          <div class="fl-item-title">Video Editing &amp; Post</div>
+          <div class="fl-item-desc">Professional video editing, color grading, and effects using VULPIXISM Classic Editor.</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:8px;">
+      <button class="insp-btn insp-btn-primary" onclick="VULPIXISM.helpmenu('wiki');closePanel('freelance')">📖 Wiki</button>
+      <button class="insp-btn insp-btn-ghost" onclick="closePanel('freelance')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay-panel" id="panel-social">
+  <div class="panel-box">
+    <div class="panel-close" onclick="closePanel('social')">✕</div>
+    <div class="panel-h1">Social Links</div>
+    <div class="panel-sub">Connect with VULPIXISM · Since 2024</div>
+    <div class="social-grid">
+      <div class="social-card">
+        <img src="InShot_20260504_084454247.jpg" alt="Social 1" onerror="this.parentNode.style.display='none'">
+        <div class="social-card-label">Portfolio</div>
+      </div>
+      <div class="social-card">
+        <img src="InShot_20260504_085742570.jpg" alt="Social 2" onerror="this.parentNode.style.display='none'">
+        <div class="social-card-label">Showcase</div>
+      </div>
+      <div class="social-card" style="grid-column:1/-1;">
+        <img src="InShot_20260504_085815683.jpg" alt="Social 3" style="height:140px;object-fit:cover;" onerror="this.parentNode.style.display='none'">
+        <div class="social-card-label">Community</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <a href="https://vulpixism.fandom.com/wiki/Vulpixismpedia_Wiki" target="_blank" class="insp-btn insp-btn-primary" style="display:inline-block;text-decoration:none;">📖 Visit Wiki</a>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT OVERLAY -->
+<div id="exportOverlay">
+  <div class="exp-title">EXPORTING</div>
+  <div class="exp-bar"><div class="exp-fill" id="expFill" style="width:0%"></div></div>
+  <div class="exp-label" id="expLabel">Preparing…</div>
+  <button class="insp-btn insp-btn-ghost" onclick="cancelExport()" style="margin-top:8px;">Cancel</button>
+</div>
+
+<!-- Scripts -->
+<script src="js/vulpixism.js"></script>
+<script src="js/webgl-engine.js"></script>
+<script>
+/* ── INIT ── */
+let glReady = false;
+let tlZoom = 1;
+let drawMode = false;
+let drawCtx = null;
+let isDrawing = false;
+let animFrame = null;
+let exportCancelled = false;
+let audioCtx = null;
+let gainNode = null;
+
+const canvas = document.getElementById('glCanvas');
+const drawCanvas = document.getElementById('drawCanvas');
+const playhead = document.getElementById('playhead');
+const timecodeEl = document.getElementById('timecode');
+const noClipMsg = document.getElementById('noClipMsg');
+
+function initGL() {
+  glReady = VulpixismGL.init(canvas);
+  if (!glReady) window.location.href = 'missingsupport.html';
+  resizeCanvas();
+  renderFrame();
+}
+
+function resizeCanvas() {
+  const area = document.getElementById('preview-area');
+  const w = area.clientWidth, h = area.clientHeight;
+  const ar = 16 / 9;
+  let cw, ch;
+  if (w / h > ar) { ch = h - 20; cw = ch * ar; }
+  else { cw = w - 20; ch = cw / ar; }
+  canvas.style.width = cw + 'px';
+  canvas.style.height = ch + 'px';
+  drawCanvas.style.width = cw + 'px';
+  drawCanvas.style.height = ch + 'px';
+  drawCanvas.width = cw; drawCanvas.height = ch;
+}
+
+/* ── DEFAULT CLIPS ── */
+function initDefaultClips() {
+  const classicClip = {
+    id: VULPIXISM.uid(), name: 'InShot_20260504_084358421.jpg', type: 'image',
+    src: 'InShot_20260504_084358421.jpg', start: 0, duration: 30 * 60,
+    x: 0, y: 0, width: 1280, height: 720, opacity: 1, effects: [], keyframes: []
+  };
+  const compClip = {
+    id: VULPIXISM.uid(), name: 'InShot_20260504_084410700.jpg', type: 'image',
+    src: 'InShot_20260504_084410700.jpg', start: 0, duration: 10,
+    x: 0, y: 0, width: 1280, height: 720, opacity: 1, effects: [], keyframes: [], layer: 'comp'
+  };
+  VULPIXISM.state.project.clips.push(classicClip, compClip);
+  VULPIXISM.snapshot();
+}
+
+/* ── RENDERING ── */
+const texCache = {};
+const imgCache = {};
+
+function getTexture(clip) {
+  if (texCache[clip.id] && imgCache[clip.id]) return texCache[clip.id];
+  const img = imgCache[clip.id] || new Image();
+  if (!imgCache[clip.id]) {
+    imgCache[clip.id] = img;
+    img.src = clip.src;
+    img.onload = () => { texCache[clip.id] = VulpixismGL.createTextureFromImage(img); renderFrame(); };
+  }
+  return texCache[clip.id] || null;
+}
+
+function renderFrame() {
+  const gl = VulpixismGL.gl;
+  if (!gl) return;
+  const t = VULPIXISM.state.currentTime;
+  const clips = VULPIXISM.state.project.clips.filter(c => c.start <= t && c.start + c.duration > t && c.layer !== 'comp');
+  noClipMsg.style.display = clips.length ? 'none' : 'flex';
+  gl.clearColor(0, 0, 0, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  canvas.width = 1280; canvas.height = 720;
+  clips.forEach(clip => {
+    let tex = null;
+    if (clip.type === 'image') tex = getTexture(clip);
+    if (!tex) return;
+    const fx = (clip.effects || []).filter(e => e.enabled);
+    fx.forEach(e => { tex = VulpixismGL.applyEffect(tex, e, t); });
+    VulpixismGL.renderToScreen(tex);
+  });
+}
+
+/* ── PLAYBACK ── */
+let lastTime = null;
+function playLoop(ts) {
+  if (!VULPIXISM.state.playing) return;
+  if (lastTime !== null) {
+    const dt = (ts - lastTime) / 1000;
+    VULPIXISM.state.currentTime = Math.min(VULPIXISM.state.currentTime + dt, VULPIXISM.state.duration);
+    if (VULPIXISM.state.currentTime >= VULPIXISM.state.duration) {
+      VULPIXISM.state.currentTime = 0;
+    }
+  }
+  lastTime = ts;
+  updateUI();
+  renderFrame();
+  animFrame = requestAnimationFrame(playLoop);
+}
+
+function togglePlay() {
+  VULPIXISM.state.playing = !VULPIXISM.state.playing;
+  document.getElementById('playBtn').textContent = VULPIXISM.state.playing ? '⏸' : '▶';
+  if (VULPIXISM.state.playing) { lastTime = null; animFrame = requestAnimationFrame(playLoop); }
+  else { cancelAnimationFrame(animFrame); renderFrame(); }
+}
+
+function seekTo(t) {
+  VULPIXISM.state.currentTime = Math.max(0, Math.min(t, VULPIXISM.state.duration));
+  updateUI(); renderFrame();
+}
+
+function stepFrame(dir) {
+  seekTo(VULPIXISM.state.currentTime + dir / 30);
+}
+
+function setVolume(v) {
+  if (gainNode) gainNode.gain.value = +v;
+}
+
+function updateUI() {
+  const t = VULPIXISM.state.currentTime;
+  const h = Math.floor(t / 3600);
+  const m = Math.floor((t % 3600) / 60);
+  const s = Math.floor(t % 60);
+  timecodeEl.textContent = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  const pxPerSec = 60 * tlZoom;
+  playhead.style.left = (t * pxPerSec) + 'px';
+}
+
+/* ── TIMELINE ── */
+function buildTimeline() {
+  const rows = document.getElementById('trackRows');
+  const labels = document.getElementById('trackLabels');
+  rows.innerHTML = '';
+  labels.innerHTML = '<div class="track-label" style="height:20px;">TIME</div>';
+  const dur = VULPIXISM.state.duration;
+  document.getElementById('tlDuration').textContent = formatTime(dur);
+  const clips = VULPIXISM.state.project.clips;
+  const trackMap = {};
+  clips.forEach(c => { const tr = c.track || 0; if (!trackMap[tr]) trackMap[tr] = []; trackMap[tr].push(c); });
+  const trackCount = Math.max(4, Object.keys(trackMap).length + 1);
+  const pxPerSec = 60 * tlZoom;
+  const totalW = Math.max(dur * pxPerSec, 800);
+  rows.style.width = totalW + 'px';
+  drawRuler(totalW, dur, pxPerSec);
+  for (let tr = 0; tr < trackCount; tr++) {
+    const lbl = document.createElement('div');
+    lbl.className = 'track-label';
+    lbl.textContent = 'Track ' + (tr + 1);
+    labels.appendChild(lbl);
+    const row = document.createElement('div');
+    row.className = 'track-row';
+    row.style.width = totalW + 'px';
+    row.dataset.track = tr;
+    row.addEventListener('click', (e) => {
+      const rect = row.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      seekTo(x / pxPerSec);
+    });
+    (trackMap[tr] || []).forEach(clip => {
+      const blk = document.createElement('div');
+      blk.className = 'clip-block' + (VULPIXISM.state.activeClip?.id === clip.id ? ' selected' : '');
+      blk.style.left = (clip.start * pxPerSec) + 'px';
+      blk.style.width = Math.max(clip.duration * pxPerSec, 8) + 'px';
+      if (clip.type === 'image' || clip.type === 'video') {
+        const img = document.createElement('img');
+        img.src = clip.src; img.className = 'clip-thumb';
+        img.onerror = () => img.remove();
+        blk.appendChild(img);
+      }
+      const lbl2 = document.createElement('span');
+      lbl2.className = 'clip-label';
+      lbl2.textContent = clip.name || clip.type;
+      blk.appendChild(lbl2);
+      blk.addEventListener('click', (e) => { e.stopPropagation(); selectClip(clip.id); });
+      makeDraggable(blk, clip, pxPerSec);
+      makeResizable(blk, clip, pxPerSec);
+      (clip.keyframes || []).forEach(kf => {
+        const dot = document.createElement('div');
+        dot.className = 'kf-dot';
+        dot.style.left = ((kf.time - clip.start) * pxPerSec) + 'px';
+        dot.title = kf.property + ' @ ' + formatTime(kf.time);
+        dot.addEventListener('click', e => { e.stopPropagation(); VULPIXISM.state.selectedKeyframe = kf.id; buildKfList(); });
+        blk.appendChild(dot);
+      });
+      row.appendChild(blk);
+    });
+    rows.appendChild(row);
+  }
+  updateUI();
+}
+
+function drawRuler(totalW, dur, pxPerSec) {
+  const c = document.getElementById('rulerCanvas');
+  c.width = totalW; c.height = 20;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#111';
+  ctx.fillRect(0, 0, totalW, 20);
+  ctx.fillStyle = '#555';
+  ctx.font = '9px Open Sans';
+  const step = tlZoom >= 2 ? 1 : tlZoom >= 1 ? 2 : 5;
+  for (let s = 0; s <= dur; s += step) {
+    const x = s * pxPerSec;
+    ctx.fillRect(x, 10, 1, 10);
+    if (s % (step * 5) === 0) {
+      ctx.fillRect(x, 6, 1, 14);
+      ctx.fillStyle = '#888';
+      ctx.fillText(formatTime(s), x + 2, 14);
+      ctx.fillStyle = '#555';
+    }
+  }
+  c.addEventListener('mousedown', (e) => {
+    const rect = c.getBoundingClientRect();
+    seekTo((e.clientX - rect.left) / pxPerSec);
+    const mm = (ev) => seekTo((ev.clientX - rect.left) / pxPerSec);
+    const mu = () => { window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu); };
+    window.addEventListener('mousemove', mm);
+    window.addEventListener('mouseup', mu);
+  }, { once: false });
+}
+
+function makeDraggable(el, clip, pxPerSec) {
+  let startX, startClipStart;
+  el.addEventListener('mousedown', (e) => {
+    if (e.target.classList.contains('kf-dot')) return;
+    startX = e.clientX; startClipStart = clip.start;
+    const mm = (ev) => {
+      const dx = ev.clientX - startX;
+      clip.start = Math.max(0, startClipStart + dx / pxPerSec);
+      el.style.left = (clip.start * pxPerSec) + 'px';
+      updateUI(); renderFrame();
+    };
+    const mu = () => { VULPIXISM.snapshot(); window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu); };
+    window.addEventListener('mousemove', mm);
+    window.addEventListener('mouseup', mu);
+    e.stopPropagation();
+  });
+}
+
+function makeResizable(el, clip, pxPerSec) {
+  const handle = document.createElement('div');
+  handle.style.cssText = 'position:absolute;right:0;top:0;bottom:0;width:6px;cursor:ew-resize;z-index:5;';
+  el.appendChild(handle);
+  handle.addEventListener('mousedown', (e) => {
+    const startX = e.clientX, startDur = clip.duration;
+    const mm = (ev) => {
+      clip.duration = Math.max(0.1, startDur + (ev.clientX - startX) / pxPerSec);
+      el.style.width = Math.max(clip.duration * pxPerSec, 8) + 'px';
+    };
+    const mu = () => { VULPIXISM.snapshot(); window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu); };
+    window.addEventListener('mousemove', mm);
+    window.addEventListener('mouseup', mu);
+    e.stopPropagation();
+  });
+}
+
+function zoomTl(dir) {
+  const levels = [0.25, 0.5, 1, 2, 4, 8];
+  let i = levels.indexOf(tlZoom);
+  i = Math.max(0, Math.min(levels.length - 1, i + dir));
+  tlZoom = levels[i];
+  document.getElementById('zoomLabel').textContent = tlZoom + '×';
+  buildTimeline();
+}
+
+/* ── MEDIA PANEL ── */
+function buildMediaPanel() {
+  const grid = document.getElementById('mediaGrid');
+  grid.innerHTML = '';
+  VULPIXISM.state.project.clips.forEach(clip => {
+    const item = document.createElement('div');
+    item.className = 'media-item' + (VULPIXISM.state.activeClip?.id === clip.id ? ' selected' : '');
+    if (clip.type === 'image' || clip.type === 'video') {
+      const img = document.createElement('img');
+      img.src = clip.src; img.className = 'media-thumb';
+      img.onerror = () => { img.style.display='none'; const ph=document.createElement('div'); ph.className='media-thumb-placeholder'; ph.textContent='🖼'; item.insertBefore(ph, item.firstChild); };
+      item.appendChild(img);
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'media-thumb-placeholder';
+      ph.textContent = clip.type === 'shape' ? '⬛' : clip.type === 'audio' ? '🔊' : '❓';
+      item.appendChild(ph);
+    }
+    const nm = document.createElement('div'); nm.className = 'media-name'; nm.textContent = clip.name;
+    item.appendChild(nm);
+    const dur = document.createElement('div'); dur.className = 'media-dur'; dur.textContent = formatTime(clip.duration);
+    item.appendChild(dur);
+    item.addEventListener('click', () => selectClip(clip.id));
+    item.addEventListener('dblclick', () => { clip.start = VULPIXISM.state.currentTime; buildTimeline(); renderFrame(); });
+    grid.appendChild(item);
+  });
+}
+
+/* ── EFFECTS PANEL ── */
+function buildEffectsPanel(filter) {
+  const list = document.getElementById('effectList');
+  list.innerHTML = '';
+  const defs = VULPIXISM.EFFECT_DEFS;
+  Object.entries(defs).forEach(([key, def]) => {
+    if (filter && !def.label.toLowerCase().includes(filter.toLowerCase())) return;
+    const item = document.createElement('div');
+    item.className = 'effect-item';
+    item.innerHTML = `<div class="effect-header"><span class="effect-icon">✨</span><span>${def.label}</span><span class="effect-tag">WebGL</span></div>`;
+    item.addEventListener('click', () => {
+      if (VULPIXISM.state.activeClip) {
+        VULPIXISM.addEffect(VULPIXISM.state.activeClip.id, key);
+        buildInspector();
+        VULPIXISM.toast('Added: ' + def.label);
+      } else {
+        VULPIXISM.toast('Select a clip first');
+      }
+    });
+    list.appendChild(item);
+  });
+}
+
+function filterEffects(v) { buildEffectsPanel(v); }
+
+/* ── LAYERS PANEL ── */
+function buildLayerPanel() {
+  const list = document.getElementById('layerList');
+  list.innerHTML = '';
+  const clips = [...VULPIXISM.state.project.clips].reverse();
+  clips.forEach(clip => {
+    const item = document.createElement('div');
+    item.style.cssText = 'padding:8px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:12px;';
+    if (VULPIXISM.state.activeClip?.id === clip.id) item.style.background = 'var(--bg3)';
+    const icon = clip.type === 'image' ? '🖼' : clip.type === 'video' ? '🎬' : clip.type === 'shape' ? '⬛' : '🔊';
+    item.innerHTML = `<span>${icon}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${clip.name}</span>`;
+    const vis = document.createElement('span');
+    vis.textContent = clip.hidden ? '👁️‍🗨️' : '👁';
+    vis.style.cursor = 'pointer';
+    vis.addEventListener('click', e => { e.stopPropagation(); clip.hidden = !clip.hidden; renderFrame(); buildLayerPanel(); });
+    item.appendChild(vis);
+    item.addEventListener('click', () => selectClip(clip.id));
+    list.appendChild(item);
+  });
+}
+
+/* ── INSPECTOR ── */
+function buildInspector() {
+  const clip = VULPIXISM.state.activeClip;
+  if (!clip) return;
+  document.getElementById('inp-x').value = clip.x || 0;
+  document.getElementById('inp-y').value = clip.y || 0;
+  document.getElementById('inp-w').value = clip.width || 1280;
+  document.getElementById('inp-h').value = clip.height || 720;
+  document.getElementById('inp-rot').value = clip.rotation || 0;
+  document.getElementById('inp-op').value = clip.opacity ?? 1;
+  document.getElementById('inp-start').value = clip.start;
+  document.getElementById('inp-dur').value = clip.duration;
+  buildActiveEffects();
+  buildKfList();
+}
+
+function buildActiveEffects() {
+  const clip = VULPIXISM.state.activeClip;
+  const cont = document.getElementById('activeEffects');
+  cont.innerHTML = '';
+  if (!clip) return;
+  (clip.effects || []).forEach(eff => {
+    const def = VULPIXISM.EFFECT_DEFS[eff.type];
+    if (!def) return;
+    const item = document.createElement('div');
+    item.className = 'active-effect-item';
+    const hdr = document.createElement('div');
+    hdr.className = 'ae-header';
+    hdr.innerHTML = `<span class="ae-toggle">${eff.enabled ? '👁' : '🚫'}</span><span class="ae-name">${def.label}</span><span class="ae-remove">✕</span>`;
+    hdr.querySelector('.ae-toggle').addEventListener('click', e => { e.stopPropagation(); eff.enabled = !eff.enabled; buildActiveEffects(); renderFrame(); });
+    hdr.querySelector('.ae-remove').addEventListener('click', e => { e.stopPropagation(); VULPIXISM.removeEffect(clip.id, eff.id); buildActiveEffects(); renderFrame(); });
+    const params = document.createElement('div');
+    params.className = 'ae-params open';
+    Object.entries(def.params).forEach(([pk, pd]) => {
+      if (pd.type === 'bool') {
+        const row = document.createElement('div');
+        row.className = 'ae-param-row';
+        row.innerHTML = `<span class="ae-param-label">${pk}</span><input type="checkbox" ${eff.params[pk] ? 'checked' : ''}>`;
+        row.querySelector('input').addEventListener('change', e => { eff.params[pk] = e.target.checked; renderFrame(); });
+        params.appendChild(row);
+      } else if (pd.type === 'select') {
+        const row = document.createElement('div');
+        row.className = 'ae-param-row';
+        const sel = document.createElement('select');
+        sel.className = 'insp-input';
+        sel.style.flex = '1';
+        pd.options.forEach(o => { const op = document.createElement('option'); op.value = o; op.textContent = o; if (o === eff.params[pk]) op.selected = true; sel.appendChild(op); });
+        sel.addEventListener('change', e => { eff.params[pk] = e.target.value; renderFrame(); });
+        row.innerHTML = `<span class="ae-param-label">${pk}</span>`;
+        row.appendChild(sel);
+        params.appendChild(row);
+      } else {
+        const row = document.createElement('div');
+        row.className = 'ae-param-row';
+        const valEl = document.createElement('span');
+        valEl.className = 'ae-param-val';
+        valEl.textContent = (+eff.params[pk]).toFixed(2);
+        const inp = document.createElement('input');
+        inp.type = 'range'; inp.min = pd.min; inp.max = pd.max;
+        inp.step = (pd.max - pd.min) / 100;
+        inp.value = eff.params[pk];
+        inp.className = 'ae-param-input';
+        inp.addEventListener('input', e => {
+          eff.params[pk] = +e.target.value;
+          valEl.textContent = (+e.target.value).toFixed(2);
+          renderFrame();
+        });
+        row.innerHTML = `<span class="ae-param-label">${pk}</span>`;
+        row.appendChild(inp); row.appendChild(valEl);
+        params.appendChild(row);
+      }
+    });
+    hdr.addEventListener('click', () => params.classList.toggle('open'));
+    item.appendChild(hdr); item.appendChild(params);
+    cont.appendChild(item);
+  });
+}
+
+function buildKfList() {
+  const clip = VULPIXISM.state.activeClip;
+  const cont = document.getElementById('kfList');
+  cont.innerHTML = '';
+  if (!clip) return;
+  (clip.keyframes || []).forEach(kf => {
+    const row = document.createElement('div');
+    row.className = 'kf-item';
+    row.innerHTML = `<span class="kf-prop">${kf.property}</span><span class="kf-time">${formatTime(kf.time)}</span><span class="kf-del">✕</span>`;
+    row.querySelector('.kf-del').addEventListener('click', () => { VULPIXISM.removeKeyframe(clip.id, kf.id); buildKfList(); buildTimeline(); });
+    cont.appendChild(row);
+  });
+}
+
+/* ── CLIP SELECTION ── */
+function selectClip(id) {
+  const clip = VULPIXISM.state.project.clips.find(c => c.id === id);
+  VULPIXISM.state.activeClip = clip;
+  buildInspector();
+  buildTimeline();
+  buildMediaPanel();
+  buildLayerPanel();
+  renderFrame();
+}
+
+function setClipProp(prop, val) {
+  const clip = VULPIXISM.state.activeClip;
+  if (!clip) return;
+  clip[prop] = val;
+  VULPIXISM.snapshot();
+  renderFrame();
+}
+
+function deleteClip() {
+  if (!VULPIXISM.state.activeClip) return;
+  VULPIXISM.state.project.clips = VULPIXISM.state.project.clips.filter(c => c.id !== VULPIXISM.state.activeClip.id);
+  VULPIXISM.state.activeClip = null;
+  VULPIXISM.snapshot();
+  rebuildAll();
+}
+
+function addKfAtCurrent() {
+  const clip = VULPIXISM.state.activeClip;
+  if (!clip) { VULPIXISM.toast('Select a clip first'); return; }
+  VULPIXISM.addKeyframe(clip.id, 'opacity', VULPIXISM.state.currentTime, clip.opacity);
+  buildKfList(); buildTimeline();
+  VULPIXISM.toast('Keyframe added at ' + formatTime(VULPIXISM.state.currentTime));
+}
+
+/* ── MODE ── */
+function setMode(mode) {
+  VULPIXISM.state.mode = mode;
+  document.getElementById('tab-classic').classList.toggle('active', mode === 'classic');
+  document.getElementById('tab-comp').classList.toggle('active', mode === 'comp');
+  const vc = document.getElementById('view-classic');
+  const vcomp = document.getElementById('view-comp');
+  vc.style.display = mode === 'classic' ? 'flex' : 'none';
+  vcomp.style.display = mode === 'comp' ? 'flex' : 'none';
+  if (mode === 'comp') init3DViewport();
+}
+
+function init3DViewport() {
+  const el = document.getElementById('comp3dCanvas');
+  if (el.dataset.init) return;
+  el.dataset.init = '1';
+  const cv = document.createElement('canvas');
+  cv.width = el.clientWidth || 300; cv.height = 120;
+  cv.style.width = '100%'; cv.style.height = '120px';
+  el.innerHTML = '';
+  el.appendChild(cv);
+  const glc = cv.getContext('webgl2') || cv.getContext('webgl');
+  if (!glc) { el.textContent = 'WebGL not available'; return; }
+  let angle = 0;
+  function draw3d() {
+    glc.clearColor(0.05, 0.05, 0.05, 1); glc.clear(glc.COLOR_BUFFER_BIT | glc.DEPTH_BUFFER_BIT);
+    angle += 0.005;
+    requestAnimationFrame(draw3d);
+  }
+  draw3d();
+}
+
+/* ── BLEND MODE / OPACITY / Z ── */
+function setBlendMode(v) { if (VULPIXISM.state.activeClip) { VULPIXISM.state.activeClip.blendMode = v; renderFrame(); } }
+function setOpacity(v) { if (VULPIXISM.state.activeClip) { VULPIXISM.state.activeClip.opacity = v; renderFrame(); } }
+function setZDepth(v) { if (VULPIXISM.state.activeClip) { VULPIXISM.state.activeClip.zDepth = +v; renderFrame(); } }
+
+/* ── DRAW MODE ── */
+function toggleDraw() {
+  drawMode = !drawMode;
+  drawCanvas.style.display = drawMode ? 'block' : 'none';
+  document.getElementById('btn-draw').classList.toggle('active', drawMode);
+  if (drawMode && !drawCtx) {
+    drawCtx = drawCanvas.getContext('2d');
+    drawCanvas.addEventListener('mousedown', dStart);
+    drawCanvas.addEventListener('mousemove', dMove);
+    drawCanvas.addEventListener('mouseup', dEnd);
+    drawCanvas.addEventListener('touchstart', e => dStart(e.touches[0]));
+    drawCanvas.addEventListener('touchmove', e => { e.preventDefault(); dMove(e.touches[0]); });
+    drawCanvas.addEventListener('touchend', dEnd);
+  }
+}
+function dStart(e) { isDrawing = true; drawCtx.beginPath(); const r = drawCanvas.getBoundingClientRect(); drawCtx.moveTo(e.clientX - r.left, e.clientY - r.top); }
+function dMove(e) { if (!isDrawing) return; const r = drawCanvas.getBoundingClientRect(); drawCtx.lineTo(e.clientX - r.left, e.clientY - r.top); drawCtx.strokeStyle = '#fff'; drawCtx.lineWidth = 2; drawCtx.stroke(); }
+function dEnd() { isDrawing = false; }
+
+/* ── EXPORT ── */
+addEventListener('v:export', () => {
+  const ov = document.getElementById('exportOverlay');
+  ov.classList.add('show');
+  exportCancelled = false;
+  let pct = 0;
+  const fill = document.getElementById('expFill');
+  const lbl = document.getElementById('expLabel');
+  const msgs = ['Initializing WebGL pipeline…', 'Processing effects…', 'Rendering frames…', 'Encoding output…', 'Finalizing…'];
+  let mi = 0;
+  const iv = setInterval(() => {
+    if (exportCancelled) { clearInterval(iv); ov.classList.remove('show'); return; }
+    pct = Math.min(pct + Math.random() * 8, 99);
+    fill.style.width = pct + '%';
+    lbl.textContent = msgs[Math.min(mi, msgs.length - 1)];
+    if (pct > mi * 20) mi++;
+    if (pct >= 99) {
+      clearInterval(iv);
+      fill.style.width = '100%';
+      lbl.textContent = 'Complete!';
+      setTimeout(() => { ov.classList.remove('show'); VULPIXISM.toast('Export complete'); }, 1200);
+    }
+  }, 120);
+});
+function cancelExport() { exportCancelled = true; }
+
+/* ── MENU SYSTEM ── */
+function toggleMenu(name) {
+  const dds = document.querySelectorAll('.dropdown');
+  const btns = document.querySelectorAll('.menu-btn');
+  dds.forEach(d => d.classList.remove('show'));
+  btns.forEach(b => b.classList.remove('active'));
+  const dd = document.getElementById('dd-' + name);
+  const btn = document.getElementById('mb-' + name);
+  if (dd && btn) {
+    const r = btn.getBoundingClientRect();
+    dd.style.left = r.left + 'px';
+    dd.classList.add('show');
+    btn.classList.add('active');
+  }
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#menubar')) {
+    document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
+    document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+  }
+});
+
+/* ── OVERLAY PANELS ── */
+addEventListener('v:showpanel', e => {
+  const panel = document.getElementById('panel-' + e.detail.panel);
+  if (panel) panel.classList.add('show');
+});
+function closePanel(name) {
+  document.getElementById('panel-' + name).classList.remove('show');
+}
+
+/* ── PANEL TABS ── */
+function switchPTab(name) {
+  ['media', 'effects', 'layers'].forEach(t => {
+    document.getElementById('panel-' + t).style.display = t === name ? '' : 'none';
+    document.getElementById('ptab-' + t).classList.toggle('active', t === name);
+  });
+}
+
+/* ── STATE CHANGE ── */
+addEventListener('v:statechange', () => rebuildAll());
+function rebuildAll() {
+  buildMediaPanel();
+  buildTimeline();
+  buildInspector();
+  buildLayerPanel();
+  buildEffectsPanel();
+  document.getElementById('projectName').textContent = VULPIXISM.state.project.name;
+  renderFrame();
+}
+
+/* ── RENAME ── */
+function renameProject() {
+  const n = prompt('Project name:', VULPIXISM.state.project.name);
+  if (n) { VULPIXISM.state.project.name = n; document.getElementById('projectName').textContent = n; }
+}
+
+/* ── KEYBOARD ── */
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+  if (e.ctrlKey || e.metaKey) {
+    if (e.key === 'z') { e.preventDefault(); VULPIXISM.editmenu('undo'); }
+    if (e.key === 'y') { e.preventDefault(); VULPIXISM.editmenu('redo'); }
+    if (e.key === 'c') { e.preventDefault(); VULPIXISM.editmenu('copy'); }
+    if (e.key === 'v') { e.preventDefault(); VULPIXISM.editmenu('paste'); }
+    if (e.key === 'd') { e.preventDefault(); VULPIXISM.editmenu('duplicate'); }
+    if (e.key === 's') { e.preventDefault(); VULPIXISM.filemenu('save'); }
+    if (e.key === 'e') { e.preventDefault(); VULPIXISM.filemenu('export'); }
+    if (e.key === 'i') { e.preventDefault(); VULPIXISM.filemenu('upload'); }
+    if (e.key === 'n') { e.preventDefault(); VULPIXISM.filemenu('new'); }
+    if (e.key === 'o') { e.preventDefault(); VULPIXISM.filemenu('open'); }
+  }
+  if (e.key === 'Delete' || e.key === 'Backspace') deleteClip();
+  if (e.key === 'ArrowLeft') seekTo(VULPIXISM.state.currentTime - (e.shiftKey ? 1 : 1/30));
+  if (e.key === 'ArrowRight') seekTo(VULPIXISM.state.currentTime + (e.shiftKey ? 1 : 1/30));
+  if (e.key === 'Home') seekTo(0);
+  if (e.key === 'End') seekTo(VULPIXISM.state.duration);
+});
+
+/* ── UTILS ── */
+function formatTime(s) {
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const ss = Math.floor(s % 60);
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0');
+}
+
+/* ── RESIZE ── */
+window.addEventListener('resize', () => { resizeCanvas(); buildTimeline(); renderFrame(); });
+
+/* ── MEDIABUNNY SHIMMED PLACEHOLDER ── */
+const MediaBunny = {
+  decode: (src) => new Promise(res => {
+    const img = new Image(); img.src = src; img.onload = () => res(img);
+  })
+};
+
+/* ── STARTUP ── */
+(function start() {
+  initGL();
+  initDefaultClips();
+  buildEffectsPanel();
+  rebuildAll();
+  document.getElementById('tlDuration').textContent = formatTime(VULPIXISM.state.duration);
+})();
+</script>
+</body>
+</html>
